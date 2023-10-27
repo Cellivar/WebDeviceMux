@@ -1,0 +1,41 @@
+{
+  "name": "web-device-mux",
+  "version": "0.1.0",
+  "description": "A small library for managing connections to WebUSB, WebHID, and Web Serial devices from multiple tabs at the same time.",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Cellivar/WebDeviceMux"
+  },
+  "author": "Cellivar Kangaroorat <cellivar.kangaroorat@gmail.com> (https://github.com/cellivar)",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/Cellivar/WebDeviceMux/issues"
+  },
+  "homepage": "https://github.com/Cellivar/WebDeviceMux",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./dist/web-device-mux.js",
+      "require": "./dist/web-device-mux.umd.csj",
+      "default": "./dist/web-device-mux.js"
+    },
+    "./readme": "./readme.md"
+  },
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "@types/node": "^20.8.9",
+    "typescript": "^5.2.2",
+    "vite": "^4.5.0",
+    "vite-plugin-dts": "^3.6.2",
+    "vitest": "^0.34.6"
+  }
+}
