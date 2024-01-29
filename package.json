@@ -1,6 +1,6 @@
 {
   "name": "web-device-mux",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A small library for managing connections to WebUSB, WebHID, and Web Serial devices from multiple tabs at the same time.",
   "type": "module",
   "repository": {
@@ -21,7 +21,7 @@
   },
   "exports": {
     ".": {
-      "types": "./src/index.d.ts",
+      "types": "./dist/index.d.ts",
       "import": "./dist/web-device-mux.js",
       "require": "./dist/web-device-mux.umd.csj",
       "default": "./dist/web-device-mux.js"
