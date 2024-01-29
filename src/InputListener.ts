@@ -3,7 +3,7 @@
 import { DeviceCommunicationError } from "./Error.js";
 
 export type DataProvider<TInput> = () => Promise<TInput[] | DeviceCommunicationError>;
-export type InputHandler<TInput> = (input: TInput[]) => IHandlerResponse<TInput>;
+export type InputHandler<TInput> = (input: TInput[]) => Promise<IHandlerResponse<TInput>>;
 export interface IHandlerResponse<TInput> {
   remainderData?: TInput[];
 }
@@ -33,7 +33,7 @@ export class InputMessageListener<TInput> {
         this.logIfDebug(`Got data from provider, now has ${aggregate.length} items in receive buffer. Data: `, data);
 
         // The handler determines if what we got was sufficient, or if we need more.
-        const handleResult = this._inputHandler(aggregate);
+        const handleResult = await this._inputHandler(aggregate);
         if (handleResult.remainderData !== undefined && handleResult.remainderData.length !== 0) {
           this.logIfDebug(`Input handler provided a ${handleResult.remainderData.length} length incomplete buffer.`);
         }
