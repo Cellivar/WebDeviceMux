@@ -1,6 +1,6 @@
 {
   "name": "web-device-mux",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "A small library for managing connections to WebUSB, WebHID, and Web Serial devices from multiple tabs at the same time.",
   "type": "module",
   "repository": {
