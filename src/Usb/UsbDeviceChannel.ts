@@ -2,7 +2,7 @@ import { ConnectionDirectionMode, type IDeviceChannel, type IDeviceCommunication
 import type { IDeviceInformation } from "../Device.js";
 import { DeviceCommunicationError, DeviceNotReadyError } from "../Error.js";
 
-
+/** Device information extended with USB information. */
 export interface IUSBDeviceInformation extends IDeviceInformation {
   readonly deviceClass: number;
   readonly deviceSubclass: number;
@@ -14,6 +14,7 @@ export interface IUSBDeviceInformation extends IDeviceInformation {
   readonly deviceVersionSubminor: number;
 }
 
+/** Convert a USBDevice object to an IUSBDeviceInformation object. */
 function deviceToInfo(device: USBDevice): IUSBDeviceInformation {
   return {
     deviceClass          : device.deviceClass,
