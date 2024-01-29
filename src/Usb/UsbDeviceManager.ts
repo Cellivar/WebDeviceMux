@@ -1,5 +1,6 @@
 import type { IDeviceCommunicationOptions } from "../Channel.js";
 import type { IDevice, IDeviceEvent } from "../Device.js";
+import { isManageableDevice } from "./UsbUtilities.js";
 
 export interface IUsbDeviceManagerEventMap<TDevice extends IDevice> {
   connectedDevice: CustomEvent<IDeviceEvent<TDevice>>;
@@ -127,7 +128,7 @@ export class UsbDeviceManager<TDevice extends IDevice> extends EventTarget {
   /** Handler for device connection events. */
   public async handleConnect({ device }: USBConnectionEvent): Promise<void> {
     // Make sure it's a device this manager cares about.
-    if (!this.isManageableDevice(device)) {
+    if (!isManageableDevice(device, this.deviceCommunicationOptions.requestOptions)) {
       // Whatever device this is it isn't one we'd be able to ask the user to
       // connect to. We shouldn't attempt to talk to it.
       return;
@@ -163,39 +164,5 @@ export class UsbDeviceManager<TDevice extends IDevice> extends EventTarget {
     detail: IDeviceEvent<TDevice>
   ): boolean {
     return super.dispatchEvent(new CustomEvent<IDeviceEvent<TDevice>>(eventName, { detail }));
-  }
-
-  /** Determine if a given device is allowed to be managed by this manager. */
-  private isManageableDevice(device: USBDevice): boolean {
-    const filters = this.deviceCommunicationOptions.requestOptions.filters;
-    const exclusionFilters = this.deviceCommunicationOptions.requestOptions.exclusionFilters ?? [];
-
-    // Step 1: Look for filters where the device doesn't match.
-    const shouldBeFiltered = filters.map(filter => {
-      return (filter.vendorId   !== undefined && filter.vendorId     !== device.vendorId)
-        || (filter.productId    !== undefined && filter.productId    !== device.productId)
-        || (filter.classCode    !== undefined && filter.classCode    !== device.deviceClass)
-        || (filter.subclassCode !== undefined && filter.subclassCode !== device.deviceSubclass)
-        || (filter.protocolCode !== undefined && filter.protocolCode !== device.deviceProtocol)
-        || (filter.serialNumber !== undefined && filter.serialNumber !== device.serialNumber);
-    });
-    if (shouldBeFiltered.some(r => r === true)) {
-      return false;
-    }
-
-    // Step 2: Look for exclusions where the device does match.
-    const shouldBeExcluded = exclusionFilters.map(filter => {
-      return (filter.vendorId   !== undefined && filter.vendorId     === device.vendorId)
-        || (filter.productId    !== undefined && filter.productId    === device.productId)
-        || (filter.classCode    !== undefined && filter.classCode    === device.deviceClass)
-        || (filter.subclassCode !== undefined && filter.subclassCode === device.deviceSubclass)
-        || (filter.protocolCode !== undefined && filter.protocolCode === device.deviceProtocol)
-        || (filter.serialNumber !== undefined && filter.serialNumber === device.serialNumber);
-    });
-    if (shouldBeExcluded.some(r => r === true)) {
-      return false;
-    }
-
-    return true;
   }
 }
