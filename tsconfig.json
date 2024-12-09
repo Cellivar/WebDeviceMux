@@ -8,19 +8,20 @@
       "DOM",
       "DOM.Iterable"
     ],
-    "skipLibCheck": false,
-    "isolatedModules": true,
-    "noEmit": true,
-    "strict": true,
     "checkJs": true,
     "declaration": true,
     "declarationMap": true,
-    "noUnusedLocals": true,
-    "useDefineForClassFields": true,
-    "noUnusedParameters": true,
     "forceConsistentCasingInFileNames": true,
-    "verbatimModuleSyntax": true,
-    "incremental": true
+    "incremental": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "noImplicitOverride": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "skipLibCheck": false,
+    "strict": true,
+    "useDefineForClassFields": true,
+    "verbatimModuleSyntax": true
   },
   "include": [
     "src"

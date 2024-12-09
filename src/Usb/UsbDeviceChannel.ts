@@ -105,6 +105,7 @@ export class UsbDeviceChannel implements IDeviceChannel<Uint8Array, Uint8Array> 
       throw e;
     }
 
+    // TODO: Settings for multiple interfaces?
     await d.selectConfiguration(1);
     await d.claimInterface(0);
 
