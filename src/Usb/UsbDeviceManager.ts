@@ -15,7 +15,7 @@ export interface IUsbDeviceCommunicationOptions extends IDeviceCommunicationOpti
 type DeviceGetter<TDevice extends IDevice> = (
   device: USBDevice,
   deviceCommunicationOptions: IUsbDeviceCommunicationOptions
-) => TDevice;
+) => Promise<TDevice>;
 
 /** Singleton for handling USB device management.
  *
@@ -135,9 +135,9 @@ export class UsbDeviceManager<TDevice extends IDevice> extends EventTarget {
     }
 
     // Only handle registration if we aren't already tracking a device
-    let dev = this._devices.get(device)
+    let dev = this._devices.get(device);
     if (dev === undefined) {
-      dev = this.deviceGetter(device, this.deviceCommunicationOptions);
+      dev = await this.deviceGetter(device, this.deviceCommunicationOptions);
       this._devices.set(device, dev);
     }
 
