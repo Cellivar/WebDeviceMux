@@ -1,6 +1,6 @@
 {
   "name": "web-device-mux",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "description": "A small library for managing connections to WebUSB, WebHID, and Web Serial devices from multiple tabs at the same time.",
   "type": "module",
   "repository": {
@@ -36,16 +36,16 @@
   "devDependencies": {
     "@eslint/js": "^9.9.0",
     "@types/eslint__js": "^8.42.3",
-    "@types/node": "^20.8.9",
+    "@types/node": "^20.9.0",
     "@types/w3c-web-usb": "^1.0.10",
-    "@vitest/coverage-v8": "^2.0.5",
+    "@vitest/coverage-v8": "^2.1.6",
     "eslint": "^9.9.0",
     "https-localhost": "^4.7.1",
-    "typescript": "^5.5.4",
-    "typescript-eslint": "^8.0.1",
-    "vite": "^5.4.0",
-    "vite-plugin-dts": "^4.0.2",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.16.0",
+    "vite": "^6.0.0",
+    "vite-plugin-dts": "^4.3.0",
     "vite-plugin-eslint": "^1.8.1",
-    "vitest": "^2.0.5"
+    "vitest": "^2.1.6"
   }
 }

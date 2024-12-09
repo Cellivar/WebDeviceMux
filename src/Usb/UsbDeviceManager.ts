@@ -15,7 +15,7 @@ export interface IUsbDeviceCommunicationOptions extends IDeviceCommunicationOpti
 type DeviceGetter<TDevice extends IDevice> = (
   device: USBDevice,
   deviceCommunicationOptions: IUsbDeviceCommunicationOptions
-) => TDevice;
+) => Promise<TDevice>;
 
 /** Singleton for handling USB device management.
  *
@@ -66,12 +66,12 @@ export class UsbDeviceManager<TDevice extends IDevice> extends EventTarget {
     this.usb.addEventListener('disconnect', this.handleDisconnect.bind(this));
   }
 
-  public addEventListener<T extends keyof IUsbDeviceManagerEventMap<TDevice>>(
+  public override addEventListener<T extends keyof IUsbDeviceManagerEventMap<TDevice>>(
     type: T,
     listener: EventListenerObject | null | ((this: UsbDeviceManager<TDevice>, ev: IUsbDeviceManagerEventMap<TDevice>[T]) => void),
     options?: boolean | AddEventListenerOptions
   ): void;
-  public addEventListener(
+  public override addEventListener(
     type: string,
     callback: EventListenerOrEventListenerObject | null,
     options?: boolean | AddEventListenerOptions
@@ -79,12 +79,12 @@ export class UsbDeviceManager<TDevice extends IDevice> extends EventTarget {
     super.addEventListener(type, callback, options);
   }
 
-  public removeEventListener<T extends keyof IUsbDeviceManagerEventMap<TDevice>>(
+  public override removeEventListener<T extends keyof IUsbDeviceManagerEventMap<TDevice>>(
     type: T,
     listener: EventListenerObject | null | ((this: UsbDeviceManager<TDevice>, ev: IUsbDeviceManagerEventMap<TDevice>[T]) => void),
     options?: boolean | AddEventListenerOptions
   ): void;
-  public removeEventListener(
+  public override removeEventListener(
     type: string,
     callback: EventListenerOrEventListenerObject | null,
     options?: boolean | EventListenerOptions | undefined
@@ -135,9 +135,9 @@ export class UsbDeviceManager<TDevice extends IDevice> extends EventTarget {
     }
 
     // Only handle registration if we aren't already tracking a device
-    let dev = this._devices.get(device)
+    let dev = this._devices.get(device);
     if (dev === undefined) {
-      dev = this.deviceGetter(device, this.deviceCommunicationOptions);
+      dev = await this.deviceGetter(device, this.deviceCommunicationOptions);
       this._devices.set(device, dev);
     }
 
