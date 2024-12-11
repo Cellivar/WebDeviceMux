@@ -89,9 +89,11 @@ export class UsbDeviceChannel implements IDeviceChannel<Uint8Array, Uint8Array> 
 
   private async setup() {
     try {
-      const endpoints = await connectDevice(this.device);
+      const {input, output} = await connectDevice(this.device);
 
-      this._commMode = getCommMode(endpoints.output !== undefined, endpoints.input !== undefined);
+      this.deviceIn = input;
+      this.deviceOut = output;
+      this._commMode = getCommMode(this.deviceOut !== undefined, this.deviceIn !== undefined);
 
       if (this._commOptions.debug) {
         console.debug('Comm mode with device is', ConnectionDirectionMode[this._commMode]);
