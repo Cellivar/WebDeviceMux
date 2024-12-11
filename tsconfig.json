@@ -1,5 +1,9 @@
 {
   "compilerOptions": {
+    "types": [
+      "vitest/importMeta",
+      "@types/w3c-web-usb"
+    ],
     "target": "ES2022",
     "module": "nodenext",
     "moduleResolution": "nodenext",
