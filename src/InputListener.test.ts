@@ -1,18 +1,71 @@
-import { test, expect, describe } from 'vitest';
-import { InputMessageListener } from './InputListener.js';
+import { it, expect, describe } from 'vitest';
+import { InputMessageListener, type InputHandler } from './InputListener.js';
+import { DeviceCommunicationError } from './Error.js';
+
+function getValidListener(
+  callback: InputHandler<string> = (i) => { console.log(i); return Promise.resolve({}); }
+) {
+  return new InputMessageListener<string>(
+    async () => {
+      await new Promise(resolve => setTimeout(resolve, 50));
+      return ['hello'];
+    },
+    callback
+  );
+}
+
+function getErrorListener() {
+  return new InputMessageListener<string>(
+    async () => {
+      return new DeviceCommunicationError("This is a test error");
+    },
+    async (input) => { return {remainderData: input}}
+  );
+}
+
+function getSlowListener(
+  callback: InputHandler<string> = (i) => { console.log(i); return Promise.resolve({}); }
+) {
+  return new InputMessageListener<string>(
+    async () => {
+      await new Promise(resolve => setTimeout(resolve, 510));
+      return ['hello, but slowly.'];
+    },
+    callback
+  );
+}
 
 describe('InputListener Disposes Cleanly', () => {
-  test('Dispose does not throw', () => {
-    const listener = new InputMessageListener<string>(
-      async () => {
-        await new Promise(resolve => setTimeout(resolve, 250));
-        return ['hello '];
-      },
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      async (_input) => { return {}}
-    );
+  it('Dispose does not throw', () => {
+    const listener = getValidListener();
+    expect(listener["_disposed"]).toBe(false);
     listener.start();
+    expect(listener["_disposed"]).toBe(false);
     listener.dispose();
     expect(listener["_disposed"]).toEqual(true);
+  });
+
+  it('Double dispose does not throw', () => {
+    const listener = getValidListener();
+    expect(listener["_disposed"]).toBe(false);
+    listener.start();
+    expect(listener["_disposed"]).toBe(false);
+    listener.dispose();
+    expect(listener["_disposed"]).toBe(true);
+    listener.dispose();
+    expect(listener["_disposed"]).toBe(true);
+  });
+
+  it('Slow listener returns eventually', async () => {
+    let awaitResolve: (value: boolean) => void;
+    const signal = new Promise<boolean>((resolve) => { awaitResolve = resolve});
+    const callback = (i: string[]) => {
+      awaitResolve(true);
+      expect(i).toStrictEqual(['hello, but slowly.']);
+      return Promise.resolve({});
+    }
+    const listener = getSlowListener(callback);
+    listener.start();
+    await signal;
   });
 });

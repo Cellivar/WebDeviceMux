@@ -1,16 +1,16 @@
-import { test, expect, describe } from 'vitest';
+import { it, expect, describe } from 'vitest';
 import { isManageableDevice } from './UsbUtilities.js';
 
 describe('Filter Includes Work', () => {
   const device = {
     vendorId: 0x1234,
   } as USBDevice;
-  test('No filters means no device', () => {
+  it('No filters means no device', () => {
     const filter = {} as USBDeviceRequestOptions;
     expect(isManageableDevice(device, filter)).toBe(false);
   });
 
-  test('Filter mismatch excludes device', () => {
+  it('Filter mismatch excludes device', () => {
     const filter = {
       filters: [
         {
@@ -21,7 +21,7 @@ describe('Filter Includes Work', () => {
     expect(isManageableDevice(device, filter)).toBe(false);
   });
 
-  test('Multiple filters with all mismatch excludes device', () => {
+  it('Multiple filters with all mismatch excludes device', () => {
     const filter = {
       filters: [
         {
@@ -35,14 +35,14 @@ describe('Filter Includes Work', () => {
     expect(isManageableDevice(device, filter)).toBe(false);
   });
 
-  test('Blank filter allows device', () => {
+  it('Blank filter allows device', () => {
     const filter = {
       filters: [{}]
     } as USBDeviceRequestOptions;
     expect(isManageableDevice(device, filter)).toBe(true);
   });
 
-  test('Filter match allows device', () => {
+  it('Filter match allows device', () => {
     const filter = {
       filters: [
         {
@@ -53,7 +53,7 @@ describe('Filter Includes Work', () => {
     expect(isManageableDevice(device, filter)).toBe(true);
   });
 
-  test('Multiple filters with some match allows device', () => {
+  it('Multiple filters with some match allows device', () => {
     const filter = {
       filters: [
         {
@@ -67,7 +67,7 @@ describe('Filter Includes Work', () => {
     expect(isManageableDevice(device, filter)).toBe(true);
   });
 
-  test('Multiple filters with all match allows device', () => {
+  it('Multiple filters with all match allows device', () => {
     const filter = {
       filters: [
         {
@@ -92,7 +92,7 @@ describe('Multiple filter fields work', () => {
     serialNumber: '1234567890'
   } as USBDevice;
 
-  test('Filter multiple data match includes device', () => {
+  it('Filter multiple data match includes device', () => {
     const filter = {
       filters: [
         {
@@ -108,7 +108,7 @@ describe('Multiple filter fields work', () => {
     expect(isManageableDevice(device, filter)).toBe(true);
   });
 
-  test('Multiple filters with one valid includes device', () => {
+  it('Multiple filters with one valid includes device', () => {
     const filter = {
       filters: [
         {
@@ -124,7 +124,7 @@ describe('Multiple filter fields work', () => {
     expect(isManageableDevice(device, filter)).toBe(true);
   });
 
-  test('Mixed field match excludes device', () => {
+  it('Mixed field match excludes device', () => {
     const filter = {
       filters: [
         {
@@ -136,7 +136,7 @@ describe('Multiple filter fields work', () => {
     expect(isManageableDevice(device, filter)).toBe(false);
   });
 
-  test('Multiple mixed field mismatch excludes device', () => {
+  it('Multiple mixed field mismatch excludes device', () => {
     const filter = {
       filters: [
         {
