@@ -8,6 +8,24 @@ export interface IHandlerResponse<TInput> {
   remainderData?: TInput[];
 }
 
+function promiseWithTimeoutDefault<T>(
+  promise: Promise<T>,
+  ms: number,
+  resolveDefault: T
+): Promise<T> {
+  // create a promise that rejects in milliseconds
+  const timeout = new Promise<T>((resolve) => {
+    setTimeout(() => {
+      resolve(resolveDefault);
+    }, ms);
+  });
+
+  // returns a race between timeout and the passed promise
+  return Promise.race<T>([promise, timeout]);
+}
+
+const listenSentinel = new DeviceCommunicationError('ListenSentinel');
+
 export class InputMessageListener<TInput> {
   public start() {
     // We intentionally want to kick off an async promise here without needing
@@ -16,8 +34,22 @@ export class InputMessageListener<TInput> {
     // eslint-disable-next-line no-async-promise-executor
     new Promise<void>(async (_, reject) => {
       let aggregate: TInput[] = [];
+      let inputPromise: undefined | Promise<TInput[] | DeviceCommunicationError> = undefined;
       do {
-        const data = await this._dataProvider();
+        // Allow resuming awaiting an already-in-progress promise.
+        inputPromise ??= this._dataProvider();
+        const data = await promiseWithTimeoutDefault(inputPromise, 500, listenSentinel);
+
+        // Printers can idle or otherwise not response for long periods of time.
+        // We have a little event loop here, where every 500 milliseconds we
+        // can do some housekeeping to see if we should continue waiting or give
+        // up entirely.
+        if (data === listenSentinel) {
+          continue;
+        } else {
+          // This indicates we've left our event loop and got a real result.
+          inputPromise = undefined;
+        }
 
         if (data instanceof DeviceCommunicationError) {
           console.error(`Error getting data from source: `, data);
@@ -39,7 +71,7 @@ export class InputMessageListener<TInput> {
         }
 
         // The handler is not required to be stateful, this is instead.
-        // The handler  may indicate more data is expected by returning incomplete
+        // The handler may indicate more data is expected by returning incomplete
         // data back. We prefix our buffer with that incomplete data to add more
         // to it and wait again for more.
         aggregate = handleResult.remainderData ?? [];
@@ -47,6 +79,7 @@ export class InputMessageListener<TInput> {
     })
     .catch((reason) => {
       // TODO: Better logging?
+      this._disposed = true;
       this.logIfDebug(`Device stream listener stopped listening unexpectedly.`, reason);
     });
   }

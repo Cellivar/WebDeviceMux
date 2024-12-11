@@ -56,6 +56,14 @@ describe('InputListener Disposes Cleanly', () => {
     expect(listener["_disposed"]).toBe(true);
   });
 
+  it('Dispose on error', async () => {
+    const listener = getErrorListener();
+    expect(listener["_disposed"]).toBe(false);
+    listener.start();
+    await new Promise(resolve => setTimeout(resolve, 50));
+    expect(listener["_disposed"]).toBe(true);
+  });
+
   it('Slow listener returns eventually', async () => {
     let awaitResolve: (value: boolean) => void;
     const signal = new Promise<boolean>((resolve) => { awaitResolve = resolve});
@@ -67,5 +75,24 @@ describe('InputListener Disposes Cleanly', () => {
     const listener = getSlowListener(callback);
     listener.start();
     await signal;
+  });
+
+  it('Disposed slow listener is ignored', async () => {
+    let awaitResolve: (value: boolean) => void;
+    const signal = new Promise<boolean>((resolve) => { awaitResolve = resolve});
+    const callback = (i: string[]) => {
+      awaitResolve(true);
+      console.log(i);
+      return Promise.resolve({});
+    }
+    const listener = getSlowListener(callback);
+    listener.start();
+    // Disposing immediately after starting should prevent the signal from resolving.
+    listener.dispose();
+    const result = await Promise.race([
+      signal,
+      new Promise<string>(resolve => setTimeout(() => resolve('Correct!'), 510))
+    ]);
+    expect(result).toEqual('Correct!');
   });
 });
