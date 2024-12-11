@@ -75,50 +75,50 @@ function getFakeDevice(
       }
       return Promise.resolve();
     },
-    selectConfiguration: function (configurationValue: number): Promise<void> {
+    selectConfiguration: function (_configurationValue: number): Promise<void> {
       if (throws === 'selectConfiguration') {
         throw new Error('selectConfiguration.');
       }
       return Promise.resolve();
     },
-    claimInterface: function (interfaceNumber: number): Promise<void> {
+    claimInterface: function (_interfaceNumber: number): Promise<void> {
       if (throws === 'claimInterface') {
         throw new Error('claimInterface.');
       }
       return Promise.resolve();
     },
-    releaseInterface: function (interfaceNumber: number): Promise<void> {
+    releaseInterface: function (_interfaceNumber: number): Promise<void> {
       if (throws === 'releaseInterface') {
         throw new Error('releaseInterface.');
       }
       return Promise.resolve();
     },
-    selectAlternateInterface: function (interfaceNumber: number, alternateSetting: number): Promise<void> {
+    selectAlternateInterface: function (_interfaceNumber: number, _alternateSetting: number): Promise<void> {
       throw new Error('Function not implemented.');
     },
-    controlTransferIn: function (setup: USBControlTransferParameters, length: number): Promise<USBInTransferResult> {
+    controlTransferIn: function (_setup: USBControlTransferParameters, _length: number): Promise<USBInTransferResult> {
       throw new Error('Function not implemented.');
     },
-    controlTransferOut: function (setup: USBControlTransferParameters, data?: BufferSource): Promise<USBOutTransferResult> {
+    controlTransferOut: function (_setup: USBControlTransferParameters, _data?: BufferSource): Promise<USBOutTransferResult> {
       throw new Error('Function not implemented.');
     },
-    clearHalt: function (direction: USBDirection, endpointNumber: number): Promise<void> {
+    clearHalt: function (_direction: USBDirection, _endpointNumber: number): Promise<void> {
       throw new Error('Function not implemented.');
     },
-    transferIn: function (endpointNumber: number, length: number): Promise<USBInTransferResult> {
+    transferIn: function (_endpointNumber: number, _length: number): Promise<USBInTransferResult> {
       const msg = new TextEncoder().encode(input);
       return Promise.resolve(new USBInTransferResult('ok', new DataView(msg.buffer, msg.byteOffset, msg.byteLength)));
     },
-    transferOut: function (endpointNumber: number, data: BufferSource): Promise<USBOutTransferResult> {
+    transferOut: function (_endpointNumber: number, data: BufferSource): Promise<USBOutTransferResult> {
       return Promise.resolve({
         bytesWritten: data.byteLength,
         status: 'ok'
       });
     },
-    isochronousTransferIn: function (endpointNumber: number, packetLengths: number[]): Promise<USBIsochronousInTransferResult> {
+    isochronousTransferIn: function (_endpointNumber: number, _packetLengths: number[]): Promise<USBIsochronousInTransferResult> {
       throw new Error('Function not implemented.');
     },
-    isochronousTransferOut: function (endpointNumber: number, data: BufferSource, packetLengths: number[]): Promise<USBIsochronousOutTransferResult> {
+    isochronousTransferOut: function (_endpointNumber: number, _data: BufferSource, _packetLengths: number[]): Promise<USBIsochronousOutTransferResult> {
       throw new Error('Function not implemented.');
     },
     reset: function (): Promise<void> {
