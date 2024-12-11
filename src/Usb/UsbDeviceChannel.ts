@@ -165,11 +165,12 @@ export class UsbDeviceChannel implements IDeviceChannel<Uint8Array, Uint8Array> 
     return deviceToInfo(this.device);
   }
 
-  public async getInput(): Promise<Uint8Array[] | DeviceNotReadyError> {
+  public async getInput(packetSizeMultiplier: number = 16): Promise<Uint8Array[] | DeviceNotReadyError> {
     if (this.deviceIn === undefined || !this.connected) { return new DeviceNotReadyError('Channel is not connected.'); }
     const result = await this.device.transferIn(
       this.deviceIn.endpointNumber,
-      this.deviceIn.packetSize * 8, // Usually 64 * 8 = 512
+      //
+      this.deviceIn.packetSize * packetSizeMultiplier, // Usually 64 * 8 = 512
     )
     .catch((error: unknown) => {
       if (error instanceof DOMException
