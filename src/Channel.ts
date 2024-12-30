@@ -21,7 +21,16 @@ export interface IDeviceCommunicationOptions {
   debug: boolean;
 
   /** Milliseconds to wait for messages from a device before assuming it's done talking. Defaults to 500ms. */
-  messageWaitTimeoutMS?: number
+  messageWaitTimeoutMS?: number;
+
+  /**
+   * Max receive packet size, in bytes. Should be a power of two, 512, 1024, etc.
+   *
+   * Not all devices will respect this number. This value will be rounded down
+   * to the nearest packet size if the device must transmit on a specific length
+   * boundary. For example, most USB devices use multiples of 64.
+   */
+  maxReceivePacketSize?: number;
 }
 
 /** A communication channel for talking to a device. */
@@ -32,9 +41,6 @@ export interface IDeviceChannel<TOutput, TInput> {
   /** Gets this channel type. */
   readonly channelType: DeviceChannelType;
 
-  /** A promise indicating this communication channel is ready for use. */
-  get ready(): Promise<boolean>;
-
   /** Whether the device is connected. */
   get connected(): boolean;
 
@@ -42,14 +48,14 @@ export interface IDeviceChannel<TOutput, TInput> {
   dispose(): Promise<void>;
 
   /** Gets the basic information for the device connected on this channel. */
-  getDeviceInfo(): IDeviceInformation
+  getDeviceInfo(): Promise<IDeviceInformation>;
 
   /**
-   * Send a series of commands to the device.
-   * @param commandBuffer The series of commands to send in order.
+   * Send data to the device.
+   * @param data The buffer of data to send to the device.
    */
-  sendCommands(commandBuffer: TOutput): Promise<DeviceCommunicationError | undefined>;
+  send(data: TOutput): Promise<DeviceCommunicationError | undefined>;
 
   /** Request data from the device. */
-  getInput(): Promise<TInput[] | DeviceCommunicationError>;
+  receive(): Promise<TInput[] | DeviceCommunicationError>;
 }

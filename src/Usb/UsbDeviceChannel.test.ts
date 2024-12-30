@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { it, expect, describe } from 'vitest';
-import { UsbDeviceChannel } from './UsbDeviceChannel.js';
+import { DriverAccessDeniedError, UsbDeviceChannel } from './UsbDeviceChannel.js';
 
 type deviceThrows
 = 'none'
@@ -130,10 +130,17 @@ function getFakeDevice(
 
 describe('UsbDeviceChannel', () => {
   it('Constructs and sets fields', async () => {
-    const channel = new UsbDeviceChannel(getFakeDevice(), { debug: true });
-    await channel.ready;
+    const channel = await UsbDeviceChannel.fromDevice(getFakeDevice(), { debug: true });
     expect(channel['_disposed']).toBe(false);
     expect(channel['deviceIn']).not.toBeUndefined();
     expect(channel['deviceOut']).not.toBeUndefined();
+  });
+
+  it('Throws security error', async () => {
+    const dev = getFakeDevice('openSecurity');
+    await expect(async () => {
+      const channel = await UsbDeviceChannel.fromDevice(dev);
+      channel.dispose();
+    }).rejects.toThrowError(new DriverAccessDeniedError());
   });
 });

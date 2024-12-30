@@ -31,6 +31,25 @@ function deviceToInfo(device: USBDevice): IUSBDeviceInformation {
   };
 }
 
+function getTransferLength(
+  maxRecieve?: number,
+  devicePacket?: number,
+) {
+  // Math is hard, let's go shopping
+  const defaultMax = 4096;
+  if (maxRecieve === undefined && devicePacket === 64) {
+    return defaultMax;
+  }
+
+  let maxPacket = maxRecieve ?? defaultMax;
+  maxPacket = maxPacket > 0 ? maxPacket : defaultMax;
+
+  let devicePacketSize = devicePacket ?? 64;
+  devicePacketSize = devicePacketSize > 0 ? devicePacketSize : 64;
+
+  return devicePacketSize * Math.floor(maxPacket / devicePacketSize);
+}
+
 if (import.meta.vitest) {
   const { it, expect, describe } = import.meta.vitest
 
@@ -67,42 +86,43 @@ export class UsbDeviceChannel implements IDeviceChannel<Uint8Array, Uint8Array> 
   private _commMode = ConnectionDirectionMode.none;
   public get commMode() { return this._commMode; }
 
-  private _readyFlag = false;
-  private _readyPromise: Promise<boolean>;
-  public get ready() { return this._readyPromise; }
   public get connected() {
-    return !this._disposed
-      && this._readyFlag
-      && this.device.opened
+    return !this._disposed && this.device.opened;
   }
 
   private _disposed = false;
 
-  constructor(
+  static async fromDevice(
     device: USBDevice,
-    commOptions: IDeviceCommunicationOptions = { debug: false}
+    options: IDeviceCommunicationOptions = { debug: false },
+  ): Promise<UsbDeviceChannel> {
+    const c = new UsbDeviceChannel(device, options);
+    await c.setup();
+    return c;
+  }
+
+  protected constructor(
+    device: USBDevice,
+    commOptions: IDeviceCommunicationOptions
   ) {
     this.device = device;
     this._commOptions = commOptions;
-    this._readyPromise = this.setup();
   }
 
   private async setup() {
     try {
-      const {input, output} = await connectDevice(this.device);
+      const { input, output } = await connectDevice(this.device);
 
       this.deviceIn = input;
       this.deviceOut = output;
       this._commMode = getCommMode(this.deviceOut !== undefined, this.deviceIn !== undefined);
-
       if (this._commOptions.debug) {
         console.debug('Comm mode with device is', ConnectionDirectionMode[this._commMode]);
       }
-    } catch {
+    } catch (e) {
       await this.dispose();
+      throw e;
     }
-    this._readyFlag = true;
-    return true;
   }
 
   public async dispose() {
@@ -111,7 +131,6 @@ export class UsbDeviceChannel implements IDeviceChannel<Uint8Array, Uint8Array> 
     }
 
     this._disposed = true;
-    this._readyPromise = Promise.resolve(false);
 
     try {
       await this.device.close();
@@ -130,7 +149,7 @@ export class UsbDeviceChannel implements IDeviceChannel<Uint8Array, Uint8Array> 
     }
   }
 
-  public async sendCommands(
+  public async send(
     commandBuffer: Uint8Array
   ): Promise<DeviceNotReadyError | undefined> {
     if (this.deviceOut === undefined || !this.connected) {
@@ -150,7 +169,7 @@ export class UsbDeviceChannel implements IDeviceChannel<Uint8Array, Uint8Array> 
       if (typeof e === 'string') {
         return new DeviceCommunicationError(e);
       }
-      if (e instanceof Error) {
+      if (e instanceof Error ) {
         return new DeviceCommunicationError(undefined, e);
       }
       // Dunno what this is but we can't wrap it.
@@ -164,15 +183,18 @@ export class UsbDeviceChannel implements IDeviceChannel<Uint8Array, Uint8Array> 
   }
 
   public getDeviceInfo() {
-    return deviceToInfo(this.device);
+    return Promise.resolve(deviceToInfo(this.device));
   }
 
-  public async getInput(packetSizeMultiplier: number = 16): Promise<Uint8Array[] | DeviceNotReadyError> {
+  public async receive(): Promise<Uint8Array[] | DeviceNotReadyError> {
     if (this.deviceIn === undefined || !this.connected) { return new DeviceNotReadyError('Channel is not connected.'); }
+
     const result = await this.device.transferIn(
       this.deviceIn.endpointNumber,
-      //
-      this.deviceIn.packetSize * packetSizeMultiplier, // Usually 64 * 8 = 512
+      getTransferLength(
+        this._commOptions.maxReceivePacketSize,
+        this.deviceIn?.packetSize,
+      ),
     )
     .catch((error: unknown) => {
       if (error instanceof DOMException
