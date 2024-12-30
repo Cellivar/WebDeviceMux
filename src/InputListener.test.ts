@@ -1,16 +1,19 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { it, expect, describe } from 'vitest';
-import { InputMessageListener, type InputHandler } from './InputListener.js';
+import { InputMessageListener, type InputErrorHandler, type InputHandler } from './InputListener.js';
 import { DeviceCommunicationError } from './Error.js';
 
 function getValidListener(
-  callback: InputHandler<string> = (i) => { console.log(i); return Promise.resolve({}); }
+  callback: InputHandler<string> = (i) => { console.log(i); return Promise.resolve({}); },
+  errorHandler: InputErrorHandler = (e) => { console.log(e); return Promise.resolve(); }
 ) {
   return new InputMessageListener<string>(
     async () => {
       await new Promise(resolve => setTimeout(resolve, 50));
       return ['hello'];
     },
-    callback
+    callback,
+    errorHandler
   );
 }
 
@@ -19,7 +22,8 @@ function getErrorListener() {
     async () => {
       return new DeviceCommunicationError("This is a test error");
     },
-    async (input) => { return {remainderData: input}}
+    async (input) => { return {remainderData: input} },
+    (_) => { return Promise.resolve(); }
   );
 }
 
@@ -31,7 +35,8 @@ function getSlowListener(
       await new Promise(resolve => setTimeout(resolve, 510));
       return ['hello, but slowly.'];
     },
-    callback
+    callback,
+    (_) => { return Promise.resolve(); }
   );
 }
 
