@@ -149,7 +149,7 @@ export class UsbDeviceChannel implements IDeviceChannel<Uint8Array, Uint8Array> 
     }
   }
 
-  public async sendCommands(
+  public async send(
     commandBuffer: Uint8Array
   ): Promise<DeviceNotReadyError | undefined> {
     if (this.deviceOut === undefined || !this.connected) {
@@ -186,7 +186,7 @@ export class UsbDeviceChannel implements IDeviceChannel<Uint8Array, Uint8Array> 
     return Promise.resolve(deviceToInfo(this.device));
   }
 
-  public async getInput(packetSizeMultiplier: number = 16): Promise<Uint8Array[] | DeviceNotReadyError> {
+  public async receive(): Promise<Uint8Array[] | DeviceNotReadyError> {
     if (this.deviceIn === undefined || !this.connected) { return new DeviceNotReadyError('Channel is not connected.'); }
 
     const result = await this.device.transferIn(

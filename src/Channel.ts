@@ -51,11 +51,11 @@ export interface IDeviceChannel<TOutput, TInput> {
   getDeviceInfo(): Promise<IDeviceInformation>;
 
   /**
-   * Send a series of commands to the device.
-   * @param commandBuffer The series of commands to send in order.
+   * Send data to the device.
+   * @param data The buffer of data to send to the device.
    */
-  sendCommands(commandBuffer: TOutput): Promise<DeviceCommunicationError | undefined>;
+  send(data: TOutput): Promise<DeviceCommunicationError | undefined>;
 
   /** Request data from the device. */
-  getInput(): Promise<TInput[] | DeviceCommunicationError>;
+  receive(): Promise<TInput[] | DeviceCommunicationError>;
 }
