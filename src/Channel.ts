@@ -41,9 +41,6 @@ export interface IDeviceChannel<TOutput, TInput> {
   /** Gets this channel type. */
   readonly channelType: DeviceChannelType;
 
-  /** A promise indicating this communication channel is ready for use. */
-  get ready(): Promise<boolean>;
-
   /** Whether the device is connected. */
   get connected(): boolean;
 
@@ -51,7 +48,7 @@ export interface IDeviceChannel<TOutput, TInput> {
   dispose(): Promise<void>;
 
   /** Gets the basic information for the device connected on this channel. */
-  getDeviceInfo(): IDeviceInformation
+  getDeviceInfo(): Promise<IDeviceInformation>;
 
   /**
    * Send a series of commands to the device.

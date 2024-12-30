@@ -86,42 +86,43 @@ export class UsbDeviceChannel implements IDeviceChannel<Uint8Array, Uint8Array> 
   private _commMode = ConnectionDirectionMode.none;
   public get commMode() { return this._commMode; }
 
-  private _readyFlag = false;
-  private _readyPromise: Promise<boolean>;
-  public get ready() { return this._readyPromise; }
   public get connected() {
-    return !this._disposed
-      && this._readyFlag
-      && this.device.opened
+    return !this._disposed && this.device.opened;
   }
 
   private _disposed = false;
 
-  constructor(
+  static async fromDevice(
     device: USBDevice,
-    commOptions: IDeviceCommunicationOptions = { debug: false}
+    options: IDeviceCommunicationOptions = { debug: false },
+  ): Promise<UsbDeviceChannel> {
+    const c = new UsbDeviceChannel(device, options);
+    await c.setup();
+    return c;
+  }
+
+  protected constructor(
+    device: USBDevice,
+    commOptions: IDeviceCommunicationOptions
   ) {
     this.device = device;
     this._commOptions = commOptions;
-    this._readyPromise = this.setup();
   }
 
   private async setup() {
     try {
-      const {input, output} = await connectDevice(this.device);
+      const { input, output } = await connectDevice(this.device);
 
       this.deviceIn = input;
       this.deviceOut = output;
       this._commMode = getCommMode(this.deviceOut !== undefined, this.deviceIn !== undefined);
-
       if (this._commOptions.debug) {
         console.debug('Comm mode with device is', ConnectionDirectionMode[this._commMode]);
       }
-    } catch {
+    } catch (e) {
       await this.dispose();
+      throw e;
     }
-    this._readyFlag = true;
-    return true;
   }
 
   public async dispose() {
@@ -130,7 +131,6 @@ export class UsbDeviceChannel implements IDeviceChannel<Uint8Array, Uint8Array> 
     }
 
     this._disposed = true;
-    this._readyPromise = Promise.resolve(false);
 
     try {
       await this.device.close();
@@ -169,7 +169,7 @@ export class UsbDeviceChannel implements IDeviceChannel<Uint8Array, Uint8Array> 
       if (typeof e === 'string') {
         return new DeviceCommunicationError(e);
       }
-      if (e instanceof Error) {
+      if (e instanceof Error ) {
         return new DeviceCommunicationError(undefined, e);
       }
       // Dunno what this is but we can't wrap it.
@@ -183,7 +183,7 @@ export class UsbDeviceChannel implements IDeviceChannel<Uint8Array, Uint8Array> 
   }
 
   public getDeviceInfo() {
-    return deviceToInfo(this.device);
+    return Promise.resolve(deviceToInfo(this.device));
   }
 
   public async getInput(packetSizeMultiplier: number = 16): Promise<Uint8Array[] | DeviceNotReadyError> {
