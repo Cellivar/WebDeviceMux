@@ -31,6 +31,25 @@ function deviceToInfo(device: USBDevice): IUSBDeviceInformation {
   };
 }
 
+function getTransferLength(
+  maxRecieve?: number,
+  devicePacket?: number,
+) {
+  // Math is hard, let's go shopping
+  const defaultMax = 4096;
+  if (maxRecieve === undefined && devicePacket === 64) {
+    return defaultMax;
+  }
+
+  let maxPacket = maxRecieve ?? defaultMax;
+  maxPacket = maxPacket > 0 ? maxPacket : defaultMax;
+
+  let devicePacketSize = devicePacket ?? 64;
+  devicePacketSize = devicePacketSize > 0 ? devicePacketSize : 64;
+
+  return devicePacketSize * Math.floor(maxPacket / devicePacketSize);
+}
+
 if (import.meta.vitest) {
   const { it, expect, describe } = import.meta.vitest
 
@@ -169,10 +188,13 @@ export class UsbDeviceChannel implements IDeviceChannel<Uint8Array, Uint8Array> 
 
   public async getInput(packetSizeMultiplier: number = 16): Promise<Uint8Array[] | DeviceNotReadyError> {
     if (this.deviceIn === undefined || !this.connected) { return new DeviceNotReadyError('Channel is not connected.'); }
+
     const result = await this.device.transferIn(
       this.deviceIn.endpointNumber,
-      //
-      this.deviceIn.packetSize * packetSizeMultiplier, // Usually 64 * 8 = 512
+      getTransferLength(
+        this._commOptions.maxReceivePacketSize,
+        this.deviceIn?.packetSize,
+      ),
     )
     .catch((error: unknown) => {
       if (error instanceof DOMException

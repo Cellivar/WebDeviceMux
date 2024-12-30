@@ -21,7 +21,16 @@ export interface IDeviceCommunicationOptions {
   debug: boolean;
 
   /** Milliseconds to wait for messages from a device before assuming it's done talking. Defaults to 500ms. */
-  messageWaitTimeoutMS?: number
+  messageWaitTimeoutMS?: number;
+
+  /**
+   * Max receive packet size, in bytes. Should be a power of two, 512, 1024, etc.
+   *
+   * Not all devices will respect this number. This value will be rounded down
+   * to the nearest packet size if the device must transmit on a specific length
+   * boundary. For example, most USB devices use multiples of 64.
+   */
+  maxReceivePacketSize?: number;
 }
 
 /** A communication channel for talking to a device. */
